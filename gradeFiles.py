@@ -36,7 +36,7 @@ args = parser.parse_args()
 
 # This function has to be modified to find the correct directory
 def get_gradefile(student):
-    return './' + student + '/lab' + args.lab + '.txt'
+    return './' + student + '/Grades/lab' + args.lab + '.txt'
 
 if (args.delete_files):
     exit()
@@ -68,7 +68,12 @@ with open(args.csv_path, 'r', newline='', encoding='utf-8-sig') as csv_file:
 print('\nGrades')
 for student in students:
     grade = 100
-    grade_file = open(get_gradefile(student), 'w')
+    grade_file = None
+    try:
+        grade_file = open(get_gradefile(student), 'w')
+    except:
+        continue
+
     # Write the errors
     grade_file.write('Lab ' + args.lab + '\n\nErrors\n')
     errors = ''
@@ -79,7 +84,7 @@ for student in students:
             location = row['location'] + ' : ' if row['location'] else ''
             errors += location + row['error'] + '\n'
     if errors == '':
-        errors = 'none'
+        errors = 'none\n'
     grade_file.write(errors)
 
     # Write the feedback
@@ -90,8 +95,8 @@ for student in students:
             feedback += row['feedback'] + '\n'
     if grade == 100:
         feedback += args.success_message + '\n'
-    else if feeback == '':
-        feedback = 'none'
+    elif feedback == '':
+        feedback = 'none\n'
     grade_file.write(feedback)
 
     # Write the final grade
