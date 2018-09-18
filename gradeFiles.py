@@ -79,9 +79,8 @@ for student in students:
             location = row['location'] + ' : ' if row['location'] else ''
             errors += location + row['error'] + '\n'
     if errors == '':
-        grade_file.write('none\n')
-    else:
-        grade_file.write(errors)
+        errors = 'none'
+    grade_file.write(errors)
 
     # Write the feedback
     grade_file.write('\nFeedback\n')
@@ -91,6 +90,8 @@ for student in students:
             feedback += row['feedback'] + '\n'
     if grade == 100:
         feedback += args.success_message + '\n'
+    else if feeback == '':
+        feedback = 'none'
     grade_file.write(feedback)
 
     # Write the final grade
