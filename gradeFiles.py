@@ -130,14 +130,12 @@ for student in students:
     print(student, grade)
     # Add the grade to the sections list
     for section in sections:
-        print(section.keys())
-        print(student in section.keys())
         if student in section.keys():
             section[student] = grade
 
 # Print the grades so we can copy and paste them into the Google sheets document
 print('\nGrades')
 for section in sections:
-    print('Section', sections.index(section) + 1)
+    print('\nSection', sections.index(section) + 1)
     for grade in section.values():
         print(grade)
