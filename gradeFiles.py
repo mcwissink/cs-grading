@@ -5,10 +5,12 @@ Python Version: 3.7
 Purpose: Automatically creates grade/feedback files for students from the csv grade file
 '''
 import argparse
+import collections
 import csv
 import io
+import os
 
-parser = argparse.ArgumentParser(description='Creates feed back files for students based on csv')
+parser = argparse.ArgumentParser(description='Creates grade files for students based on csv')
 parser.add_argument(
     'lab',
     metavar='L',
@@ -31,12 +33,19 @@ parser.add_argument(
     action='store_true',
     help='Delete the grade files associated with the lab number'
 )
+parser.add_argument(
+    '--s',
+    dest='section_list_path',
+    default=os.path.dirname(os.path.realpath(__file__)) + '/SectionList.txt',
+    help='The section list file'
+)
 
 args = parser.parse_args()
 
-# This function has to be modified to find the correct directory
+# This function might have to be modified to find the correct directory
 def get_gradefile(student):
-    return './' + student + '/Grades/lab' + args.lab + '.txt'
+    # print(os.getcwd() + student + '/Grades/lab' + args.lab + '.txt')
+    return os.getcwd() + '/' + student + '/Grades/lab' + args.lab + '.txt'
 
 if (args.delete_files):
     exit()
@@ -49,6 +58,21 @@ def deduct_points(str_points):
     except ValueError:
         print(ValueError)
         return 0
+
+print('Compiling Sections')
+sections = [collections.OrderedDict()]
+# Ensure you have a SectionList.csv file in the same directory as the gradeFiles.py
+# This SectionList file should list students in each section where each columns represents a section
+with open(args.section_list_path, 'r', newline='') as section_list:
+    current_section = 0
+    students = section_list.readlines()
+    for student in students:
+        sanitized_student = student.strip()
+        if sanitized_student == '':
+            sections.append(collections.OrderedDict())
+            current_section += 1
+        else:
+            sections[current_section][sanitized_student] = 'missing'
 
 print('Opening', args.csv_path)
 students = {}
@@ -65,13 +89,14 @@ with open(args.csv_path, 'r', newline='', encoding='utf-8-sig') as csv_file:
         else:
             students[student] = [row]
 
-print('\nGrades')
+# Create the grade file for students
 for student in students:
     grade = 100
     grade_file = None
     try:
         grade_file = open(get_gradefile(student), 'w')
     except:
+        print('Couldn\'t find directory for', student)
         continue
 
     # Write the errors
@@ -103,3 +128,16 @@ for student in students:
     grade_file.write('\nGrade\n' + str(grade) + '%\n')
     grade_file.close()
     print(student, grade)
+    # Add the grade to the sections list
+    for section in sections:
+        print(section.keys())
+        print(student in section.keys())
+        if student in section.keys():
+            section[student] = grade
+
+# Print the grades so we can copy and paste them into the Google sheets document
+print('\nGrades')
+for section in sections:
+    print('Section', sections.index(section) + 1)
+    for grade in section.values():
+        print(grade)
