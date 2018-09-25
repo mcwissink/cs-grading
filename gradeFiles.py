@@ -37,7 +37,7 @@ parser.add_argument(
     '--s',
     dest='section_list_path',
     default=os.path.dirname(os.path.realpath(__file__)) + '/SectionList.txt',
-    help='The section list file'
+    help='The section list file - it will default to SectionList.txt in the same directory as gradeFile.py'
 )
 
 args = parser.parse_args()
@@ -127,7 +127,6 @@ for student in students:
     # Write the final grade
     grade_file.write('\nGrade\n' + str(grade) + '%\n')
     grade_file.close()
-    print(student, grade)
     # Add the grade to the sections list
     for section in sections:
         if student in section.keys():
