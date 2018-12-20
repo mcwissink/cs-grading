@@ -22,7 +22,6 @@ parser.add_argument(
 parser.add_argument(
     'csv_path',
     metavar='P',
-    default='~/Grading.csv',
     help='the path to the csv, expected column format: (student, error, location, points, feedback)'
 )
 parser.add_argument(
@@ -156,18 +155,18 @@ med_student = None
 min_student = None
 # Find the max, med, and min students
 for student in students:
-    if grades[student] == max_score && max_student is None:
+    if grades[student] == max_score and max_student is None:
         max_student = student
         continue
-    if grades[student] == med_score && med_student is None:
+    if grades[student] == med_score and med_student is None:
         med_student = student
         continue
-    if grades[student] == min_score && min_student is None:
+    if grades[student] == min_score and min_student is None:
         min_student = student
         continue
 
 def get_report(outfile, student, score):
-    student_report = score + ': ' + student + '\nGRADE: ' + grades[student] + '\nFEEDBACK: '
+    student_report = '' +  score + ': ' + student + '\nGRADE: {0}\nFEEDBACK: '.format(grades[student])
     errors = ''
     for row in students[student]:
         if row['error'] != '':
@@ -175,9 +174,9 @@ def get_report(outfile, student, score):
             errors += location + row['error'] + '\n'
     if errors == '':
         errors = 'none\n'
-    outfile.write(student_report + errors + '\nCODE:\n')
+    outfile.write(student_report + errors + 'CODE:\n')
     # Get all the files the student wrote
-    student_dir = os.getcwd() + '/' + student + '/[lL]ab0?' + args.lab + '/'
+    student_dir = os.getcwd() + '/' + student + '/[lL]ab' + args.lab + '/'
     h_files = glob.glob(student_dir + '*.h')
     cpp_files = glob.glob(student_dir + '*.cpp')
     for fname in h_files + cpp_files:
@@ -186,9 +185,12 @@ def get_report(outfile, student, score):
                 outfile.write(line)
 
 divider = '\n\n============================================================\n\n'
-with open('~/grade' + args.lab + 'report.txt', 'w') as report_file:
-    report_file.write(get_report(report_file, max_student, 'MAX'))
+report_path = os.path.expanduser('~/grade' + args.lab + 'report.txt')
+with open(report_path, 'w') as report_file:
+    get_report(report_file, max_student, 'MAX')
     report_file.write(divider)
-    report_file.write(get_report(report_file, med_student, 'MEDIAN'))
+    get_report(report_file, med_student, 'MEDIAN')
     report_file.write(divider)
-    report_file.write(get_report(report_file, min_student, 'MIN'))
+    get_report(report_file, min_student, 'MIN')
+
+print('Created report: ' + report_path)
