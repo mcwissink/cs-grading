@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 '''
 File name: createGradeFiles.py
 Author: Mark Wisink
@@ -19,6 +20,7 @@ parser.add_argument(
 parser.add_argument(
     'csv_path',
     metavar='P',
+    default='~/Grading.csv'
     help='the path to the csv, expected column format: (student, error, location, points, feedback)'
 )
 parser.add_argument(
