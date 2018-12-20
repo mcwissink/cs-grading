@@ -42,7 +42,7 @@ doCommand() {
 for dir in ./*; do
   echo $dir
   echo "Removing old executable"
-  rm ~/go
+  rm -f -- ~/go
 
   isIgnored=
     for studentDir in "$@"; do
