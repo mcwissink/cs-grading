@@ -7,6 +7,8 @@ Purpose: Automatically creates grade/feedback files for students from the csv gr
 '''
 import argparse
 import collections
+import statistics
+import glob
 import csv
 import io
 import os
@@ -92,6 +94,8 @@ with open(args.csv_path, 'r', newline='', encoding='utf-8-sig') as csv_file:
             students[student] = [row]
 
 # Create the grade file for students
+# Store all the grades in an array for calculating things
+grades = {}
 for student in students:
     grade = 100
     grade_file = None
@@ -133,6 +137,8 @@ for student in students:
     for section in sections:
         if student in section.keys():
             section[student] = grade
+            # Might be bad storing grade twice... But we need it for calculations
+            grades[student] = grade
 
 # Print the grades so we can copy and paste them into the Google sheets document
 print('\nGrades')
@@ -140,3 +146,49 @@ for section in sections:
     print('\nSection', sections.index(section) + 1)
     for grade in section.values():
         print(grade)
+
+# Create the grade report summary
+max_score = max(grades.values())
+med_score = statistics.median(grades.values())
+min_score = min(grades.values())
+max_student = None
+med_student = None
+min_student = None
+# Find the max, med, and min students
+for student in students:
+    if grades[student] == max_score && max_student is None:
+        max_student = student
+        continue
+    if grades[student] == med_score && med_student is None:
+        med_student = student
+        continue
+    if grades[student] == min_score && min_student is None:
+        min_student = student
+        continue
+
+def get_report(outfile, student, score):
+    student_report = score + ': ' + student + '\nGRADE: ' + grades[student] + '\nFEEDBACK: '
+    errors = ''
+    for row in students[student]:
+        if row['error'] != '':
+            location = row['location'] + ' : ' if row['location'] else ''
+            errors += location + row['error'] + '\n'
+    if errors == '':
+        errors = 'none\n'
+    outfile.write(student_report + errors + '\nCODE:\n')
+    # Get all the files the student wrote
+    student_dir = os.getcwd() + '/' + student + '/[lL]ab0?' + args.lab + '/'
+    h_files = glob.glob(student_dir + '*.h')
+    cpp_files = glob.glob(student_dir + '*.cpp')
+    for fname in h_files + cpp_files:
+        with open(fname) as infile:
+            for line in infile:
+                outfile.write(line)
+
+divider = '\n\n============================================================\n\n'
+with open('~/grade' + args.lab + 'report.txt', 'w') as report_file:
+    report_file.write(get_report(report_file, max_student, 'MAX'))
+    report_file.write(divider)
+    report_file.write(get_report(report_file, med_student, 'MEDIAN'))
+    report_file.write(divider)
+    report_file.write(get_report(report_file, min_student, 'MIN'))
