@@ -41,7 +41,7 @@ doCommand() {
 
 for dir in ./*; do
   echo $dir
-  echo "Removing old executable"
+  # Remove the old executable
   rm -f -- ~/go
 
   isIgnored=
