@@ -12,6 +12,7 @@ import glob
 import csv
 import io
 import os
+import re
 
 parser = argparse.ArgumentParser(description='Creates grade files for students based on csv')
 parser.add_argument(
@@ -165,6 +166,7 @@ for student in students:
         min_student = student
         continue
 
+lab_num = re.sub('^0', '0?', args.lab)
 def get_report(outfile, student, score):
     student_report = '' +  score + ': ' + student + '\nGRADE: {0}\nFEEDBACK: '.format(grades[student])
     errors = ''
@@ -176,9 +178,10 @@ def get_report(outfile, student, score):
         errors = 'none\n'
     outfile.write(student_report + errors + 'CODE:\n')
     # Get all the files the student wrote
-    student_dir = os.getcwd() + '/' + student + '/[lL]ab' + args.lab + '/'
-    h_files = glob.glob(student_dir + '*.h')
-    cpp_files = glob.glob(student_dir + '*.cpp')
+    lab_dir = [f for f in os.listdir(os.getcwd() + '/' + student) if re.search('[lL]ab' + lab_num + '$', f)]
+    project_dir = os.getcwd() + '/' + student + '/' + lab_dir[0] + '/'
+    h_files = glob.glob(project_dir + '*.h')
+    cpp_files = glob.glob(project_dir + '*.cpp')
     for fname in h_files + cpp_files:
         with open(fname) as infile:
             for line in infile:
