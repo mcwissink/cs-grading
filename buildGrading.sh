@@ -75,7 +75,7 @@ for dir in ./*; do
         cat *.h >> $catfile
         cat *.cpp >> $catfile
         studentdir=${gradedir}/${dir}
-        for extraFile in *.ods *.xls*; do
+        for extraFile in *.ods *.xls* *.pdf; do
           if [[ -e ${extraFile} ]]; then
             # do not make a student dir if there aren't special files to put there in the first place
             mkdir -p "${studentdir}"
