@@ -12,6 +12,7 @@ import glob
 import csv
 import io
 import os
+import re
 
 parser = argparse.ArgumentParser(description='Creates grade files for students based on csv')
 parser.add_argument(
@@ -22,7 +23,6 @@ parser.add_argument(
 parser.add_argument(
     'csv_path',
     metavar='P',
-    default='~/Grading.csv',
     help='the path to the csv, expected column format: (student, error, location, points, feedback)'
 )
 parser.add_argument(
@@ -155,18 +155,19 @@ med_student = None
 min_student = None
 # Find the max, med, and min students
 for student in students:
-    if grades[student] == max_score && max_student is None:
+    if grades[student] == max_score and max_student is None:
         max_student = student
         continue
-    if grades[student] == med_score && med_student is None:
+    if grades[student] == med_score and med_student is None:
         med_student = student
         continue
-    if grades[student] == min_score && min_student is None:
+    if grades[student] == min_score and min_student is None:
         min_student = student
         continue
 
+lab_num = re.sub('^0', '0?', args.lab)
 def get_report(outfile, student, score):
-    student_report = score + ': ' + student + '\nGRADE: ' + grades[student] + '\nFEEDBACK: '
+    student_report = '' +  score + ': ' + student + '\nGRADE: {0}\nFEEDBACK: '.format(grades[student])
     errors = ''
     for row in students[student]:
         if row['error'] != '':
@@ -174,20 +175,24 @@ def get_report(outfile, student, score):
             errors += location + row['error'] + '\n'
     if errors == '':
         errors = 'none\n'
-    outfile.write(student_report + errors + '\nCODE:\n')
+    outfile.write(student_report + errors + 'CODE:\n')
     # Get all the files the student wrote
-    student_dir = os.getcwd() + '/' + student + '/[lL]ab0?' + args.lab + '/'
-    h_files = glob.glob(student_dir + '*.h')
-    cpp_files = glob.glob(student_dir + '*.cpp')
+    lab_dir = [f for f in os.listdir(os.getcwd() + '/' + student) if re.search('[lL]ab' + lab_num + '$', f)]
+    project_dir = os.getcwd() + '/' + student + '/' + lab_dir[0] + '/'
+    h_files = glob.glob(project_dir + '*.h')
+    cpp_files = glob.glob(project_dir + '*.cpp')
     for fname in h_files + cpp_files:
         with open(fname) as infile:
             for line in infile:
                 outfile.write(line)
 
 divider = '\n\n============================================================\n\n'
-with open('~/grade' + args.lab + 'report.txt', 'w') as report_file:
-    report_file.write(get_report(report_file, max_student, 'MAX'))
+report_path = os.path.expanduser('~/grade' + args.lab + 'report.txt')
+with open(report_path, 'w') as report_file:
+    get_report(report_file, max_student, 'MAX')
     report_file.write(divider)
-    report_file.write(get_report(report_file, med_student, 'MEDIAN'))
+    get_report(report_file, med_student, 'MEDIAN')
     report_file.write(divider)
-    report_file.write(get_report(report_file, min_student, 'MIN'))
+    get_report(report_file, min_student, 'MIN')
+
+print('Created report: ' + report_path)
