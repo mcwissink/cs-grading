@@ -84,10 +84,9 @@ students = {}
 with open(args.csv_path, 'r', newline='', encoding='utf-8-sig') as csv_file:
     csv_reader = csv.DictReader(csv_file)
     for row in csv_reader:
-        student = row['student']
+        student = row['student'].strip()
         if student == '':
             print('Invalid student', row)
-            exit()
         if (student in students):
             students[student].append(row)
         else:
